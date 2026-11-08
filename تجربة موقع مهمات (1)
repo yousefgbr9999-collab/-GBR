@@ -34,11 +34,8 @@
         .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 18px; }
 
         #loginScreen { position: fixed; inset: 0; background: rgba(0,0,0,0.88); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .login-box { background: var(--card-bg); border: 1px solid var(--card-border); padding: 24px; border-radius: var(--radius); width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow); text-align: center; }
+        .login-box { background: var(--card-bg); border: 1px solid var(--card-border); padding: 24px; border-radius: var(--radius); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow); text-align: center; }
         .login-box h2 { color: var(--accent-primary); margin-bottom: 6px; }
-
-        /* صندوق عرض الأكواد الواضح في شاشة الدخول */
-        .keys-display-box { background: rgba(0,0,0,0.3); border: 1px dashed var(--accent-secondary); padding: 10px; border-radius: 8px; text-align: right; font-size: 0.85rem; line-height: 1.6; }
 
         header { text-align: center; position: relative; }
         header h1 { font-size: 2.2rem; color: var(--accent-primary); margin-bottom: 6px; font-weight: 900; }
@@ -85,20 +82,11 @@
 </head>
 <body data-theme="neon">
 
-    <!-- شاشة تسجيل الدخول مع عرض الأكواد بوضوح تام -->
+    <!-- شاشة تسجيل الدخول (تم إخفاء الأكواد تماماً لتكون سرية) -->
     <div id="loginScreen">
         <div class="login-box">
             <h2>🔐 تسجيل الدخول لوحة يوسف</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted);">أدخل اسمك ورمز الدخول لتحديد صلاحيتك</p>
-            
-            <!-- صندوق الأكواد الواضح جداً -->
-            <div class="keys-display-box">
-                <div style="font-weight:bold; color:var(--accent-primary); margin-bottom:4px;">🔑 الأكواد الحالية للنظام:</div>
-                <div>👑 كود المالك: <b id="displayOwnerKey" style="color:var(--warning);">OWNER_GBR_999</b></div>
-                <div>🔓 كود المحرر: <b id="displayEditorKey" style="color:var(--accent-primary);">YOUSEF GBR</b></div>
-                <div>🔒 كود المشاهد: <b id="displayViewerKey" style="color:var(--accent-secondary);">VIEW GBR</b></div>
-            </div>
-
+            <p style="font-size:0.85rem; color:var(--text-muted);">أدخل اسمك ورمز الدخول الخاص بك لتحديد صلاحيتك</p>
             <input type="text" id="loginNameInput" placeholder="اكتب اسمك هنا...">
             <input type="text" id="loginKeyInput" placeholder="أدخل الرمز السرّي...">
             <button onclick="handleLogin()">دخول 🚀</button>
@@ -118,7 +106,7 @@
         <span id="milestoneText">بداية يَوْمٍ جديد! ابدأ بإنجاز أول مهمة لرفع مؤشر التقدم.</span>
     </div>
 
-    <!-- لوحة تحكم المالك مع زر تنبيه الواتساب -->
+    <!-- لوحة تحكم المالك لإدارة الأكواد وإرسال تنبيه واتساب عند التغيير -->
     <div class="card" id="ownerAdminPanel" style="display:none; border-color:var(--warning);">
         <div class="card-title" style="color:var(--warning);">👑 لوحة تحكم المالك (الأكواد وتنبيهات الواتساب)</div>
         <div class="grid-2" style="margin-bottom: 14px;">
@@ -254,10 +242,13 @@
 </div>
 
 <script>
+    // ----------------------------------------------------
+    // 🔑 حدد أكوادك السرية الخاصة هنا في الكود البرمجي مباشرة:
+    // ----------------------------------------------------
     const defaultKeys = {
-        owner: "OWNER_GBR_999",
-        editor: "YOUSEF GBR",
-        viewer: "VIEW GBR"
+        owner: "OWNER_GBR_999",  // ← استبدلها بكود المالك الخاص بك
+        editor: "YOUSEF GBR",    // ← استبدلها بكود المحرر الخاص بك
+        viewer: "VIEW GBR"       // ← استبدلها بكود المشاهد الخاص بك
     };
 
     const defaultTasks = [
@@ -283,26 +274,24 @@
     ];
 
     function loadState() {
-        return JSON.parse(localStorage.getItem('youssef_app_state')) || {
-            theme: 'neon',
-            keys: defaultKeys,
-            tasks: defaultTasks,
-            subjects: defaultSubjects,
-            exams: defaultExams,
-            users: [],
-            history: []
-        };
+        let savedState = JSON.parse(localStorage.getItem('youssef_app_state'));
+        if (!savedState) {
+            return {
+                theme: 'neon',
+                keys: defaultKeys,
+                tasks: defaultTasks,
+                subjects: defaultSubjects,
+                exams: defaultExams,
+                users: [],
+                history: []
+            };
+        }
+        // ضمان تحديث الأكواد بالقيم الخاصة بك إذا تم تغييرها في الكود
+        if (!savedState.keys) savedState.keys = defaultKeys;
+        return savedState;
     }
 
     let state = loadState();
-    if (!state.keys) state.keys = defaultKeys;
-    if (!state.users) state.users = [];
-
-    // تحديث ظهور الأكواد في شاشة الدخول
-    document.getElementById('displayOwnerKey').innerText = state.keys.owner;
-    document.getElementById('displayEditorKey').innerText = state.keys.editor;
-    document.getElementById('displayViewerKey').innerText = state.keys.viewer;
-
     let currentUser = JSON.parse(localStorage.getItem('youssef_current_user')) || null;
     let lastAlertMilestone = -1;
 
@@ -329,7 +318,7 @@
         } else if (key === state.keys.viewer) {
             role = 'viewer';
         } else {
-            alert('❌ الرمز غير صحيح! تحقق من الأكواد المعروضة بالأعلى.');
+            alert('❌ الرمز غير صحيح! يرجى التأكد من الرمز السري.');
             return;
         }
 
@@ -365,7 +354,7 @@
 
         if (currentUser.role === 'owner') {
             banner.className = "mode-banner mode-owner";
-            banner.innerText = `👑 أهلاً بك يا ${currentUser.name} | أنت (المالك) بصلاحيات كاملة وإدارة الأكواد`;
+            banner.innerText = `👑 أهلاً بك يا ${currentUser.name} | أنت (المالك) بصلاحيات كاملة`;
             ownerPanel.style.display = 'block';
             editControls.forEach(el => el.style.display = 'flex');
         } else if (currentUser.role === 'editor') {
@@ -383,7 +372,7 @@
         render();
     }
 
-    // تحديث الأكواد مع إرسال تنبيه واتساب تلقائي
+    // تحديث الأكواد من لوحة المالك + فتح واتساب لتنبيهك بالتغيير
     function updateKey(type) {
         if (currentUser.role !== 'owner') return;
         let inputVal = '';
@@ -399,18 +388,11 @@
         state.keys[type] = inputVal;
         saveState();
 
-        // تحديث العرض في شاشة الدخول أيضاً
-        document.getElementById('displayOwnerKey').innerText = state.keys.owner;
-        document.getElementById('displayEditorKey').innerText = state.keys.editor;
-        document.getElementById('displayViewerKey').innerText = state.keys.viewer;
-
         const roleName = type === 'owner' ? 'المالك' : (type === 'editor' ? 'المحرر' : 'المشاهد');
         const msg = encodeURIComponent(`🚨 تنبيه أمني لوحة يوسف:\nتم تغيير كود (${roleName}) بنجاح إلى:\n🔑 الكود الجديد: ${inputVal}`);
         
-        // فتح واتساب بشكل آلي لإرسال التنبيه
         window.open(`https://wa.me/?text=${msg}`, '_blank');
-
-        alert(`تم تحديث كود ${roleName} بنجاح، وتم فتح واتساب لإرسال التنبيه!`);
+        alert(`تم تحديث كود ${roleName} بنجاح، وتم فتح واتساب لإرسال رسالة التنبيه!`);
         render();
     }
 
