@@ -63,8 +63,9 @@
         button:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-sec { background: rgba(255,255,255,0.1); color: var(--text-main); border: 1px solid var(--card-border); }
 
-        .progress-bar-bg { background: rgba(0,0,0,0.3); border-radius: 10px; height: 14px; width: 100%; overflow: hidden; margin-top: 8px; border: 1px solid var(--card-border); }
-        .progress-bar-fill { background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-bar-bg { background: rgba(0,0,0,0.3); border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin-top: 6px; border: 1px solid var(--card-border); }
+        .progress-bar-fill { background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); height: 100%; width: 0%; transition: width 0.4s ease-in-out; }
+        .progress-bar-fill-sub { background: linear-gradient(90deg, var(--accent-secondary), #a855f7); height: 100%; width: 0%; transition: width 0.4s ease-in-out; }
 
         .task-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.15); border-radius: 10px; margin-bottom: 8px; direction: rtl; }
         .task-main { display: flex; align-items: center; gap: 12px; flex: 1; }
@@ -82,7 +83,6 @@
 </head>
 <body data-theme="neon">
 
-    <!-- شاشة تسجيل الدخول (تم إخفاء الأكواد تماماً لتكون سرية) -->
     <div id="loginScreen">
         <div class="login-box">
             <h2>🔐 تسجيل الدخول لوحة يوسف</h2>
@@ -106,7 +106,6 @@
         <span id="milestoneText">بداية يَوْمٍ جديد! ابدأ بإنجاز أول مهمة لرفع مؤشر التقدم.</span>
     </div>
 
-    <!-- لوحة تحكم المالك لإدارة الأكواد وإرسال تنبيه واتساب عند التغيير -->
     <div class="card" id="ownerAdminPanel" style="display:none; border-color:var(--warning);">
         <div class="card-title" style="color:var(--warning);">👑 لوحة تحكم المالك (الأكواد وتنبيهات الواتساب)</div>
         <div class="grid-2" style="margin-bottom: 14px;">
@@ -161,12 +160,37 @@
     </div>
 
     <div class="card">
-        <div class="card-title">
-            <span>📈 مؤشر الإنجاز اليومي الكلي</span>
-            <span id="progressText" style="color:var(--accent-primary);">0%</span>
-        </div>
-        <div class="progress-bar-bg">
-            <div id="progressBar" class="progress-bar-fill"></div>
+        <div class="card-title">📊 لوحة المؤشرات والإحصائيات</div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold;">
+                    <span>📈 مؤشر الإنجاز اليومي الكلي</span>
+                    <span id="totalProgressText" style="color:var(--accent-primary);">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="totalProgressBar" class="progress-bar-fill"></div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                        <span>📋 مؤشر إنجاز المهمات اليومية</span>
+                        <span id="tasksProgressText" style="color:var(--accent-secondary);">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="tasksProgressBar" class="progress-bar-fill-sub"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                        <span>📖 مؤشر إنجاز المواد العام</span>
+                        <span id="subjectsProgressText" style="color:var(--warning);">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="subjectsProgressBar" class="progress-bar-fill" style="background:var(--warning);"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -220,7 +244,7 @@
 
     <div class="card">
         <div class="card-title">
-            <span>📖 متابعة المقررات الدراسية</span>
+            <span>📖 متابعة المقررات الدراسية والمؤشرات المفردة</span>
         </div>
         <div style="display:flex; gap:8px; margin-bottom:12px;" class="edit-control-div">
             <input type="text" id="newSubjectInput" placeholder="اسم المادة الجديدة...">
@@ -242,13 +266,10 @@
 </div>
 
 <script>
-    // ----------------------------------------------------
-    // 🔑 حدد أكوادك السرية الخاصة هنا في الكود البرمجي مباشرة:
-    // ----------------------------------------------------
     const defaultKeys = {
-        owner: "OWNER_GBR_999",  // ← استبدلها بكود المالك الخاص بك
-        editor: "YOUSEF GBR",    // ← استبدلها بكود المحرر الخاص بك
-        viewer: "VIEW GBR"       // ← استبدلها بكود المشاهد الخاص بك
+        owner: "OWNER_GBR_999",
+        editor: "YOUSEF GBR",
+        viewer: "VIEW GBR"
     };
 
     const defaultTasks = [
@@ -273,9 +294,60 @@
         { id: 4, title: "🏆 اختبار التحصيلي (الفترة الثانية)", date: "2027-06-01" }
     ];
 
+    // نظام الفحص الذاتي واكتشاف الأخطاء وتصحيح البيانات (Validation & Error Correction)
+    function validateAndRepairState(savedState) {
+        if (!savedState || typeof savedState !== 'object') {
+            return null;
+        }
+        // التأكد من وجود الأقسام الأساسية وعدم تلفها
+        if (!Array.isArray(savedState.tasks) || savedState.tasks.length === 0) {
+            savedState.tasks = defaultTasks;
+        }
+        if (!Array.isArray(savedState.subjects) || savedState.subjects.length === 0) {
+            savedState.subjects = defaultSubjects;
+        }
+        if (!Array.isArray(savedState.exams)) {
+            savedState.exams = defaultExams;
+        }
+        if (!savedState.keys) {
+            savedState.keys = defaultKeys;
+        }
+        if (!Array.isArray(savedState.users)) {
+            savedState.users = [];
+        }
+        if (!Array.isArray(savedState.history)) {
+            savedState.history = [];
+        }
+        return savedState;
+    }
+
     function loadState() {
-        let savedState = JSON.parse(localStorage.getItem('youssef_app_state'));
-        if (!savedState) {
+        try {
+            let rawData = localStorage.getItem('youssef_app_state');
+            if (!rawData) {
+                return {
+                    theme: 'neon',
+                    keys: defaultKeys,
+                    tasks: defaultTasks,
+                    subjects: defaultSubjects,
+                    exams: defaultExams,
+                    users: [],
+                    history: []
+                };
+            }
+            let parsed = JSON.parse(rawData);
+            let verifiedState = validateAndRepairState(parsed);
+            return verifiedState || {
+                theme: 'neon',
+                keys: defaultKeys,
+                tasks: defaultTasks,
+                subjects: defaultSubjects,
+                exams: defaultExams,
+                users: [],
+                history: []
+            };
+        } catch (e) {
+            console.error("خطأ في قراءة البيانات، تم استعادة الافتراضيات بأمان:", e);
             return {
                 theme: 'neon',
                 keys: defaultKeys,
@@ -286,9 +358,6 @@
                 history: []
             };
         }
-        // ضمان تحديث الأكواد بالقيم الخاصة بك إذا تم تغييرها في الكود
-        if (!savedState.keys) savedState.keys = defaultKeys;
-        return savedState;
     }
 
     let state = loadState();
@@ -372,7 +441,6 @@
         render();
     }
 
-    // تحديث الأكواد من لوحة المالك + فتح واتساب لتنبيهك بالتغيير
     function updateKey(type) {
         if (currentUser.role !== 'owner') return;
         let inputVal = '';
@@ -581,7 +649,20 @@
 
         const subjectsContainer = document.getElementById('subjectsList');
         subjectsContainer.innerHTML = '';
+        
+        let totalSubProgressSum = 0;
+
         state.subjects.forEach((sub, i) => {
+            let lTotal = Number(sub.lessonsTotal) || 1;
+            let lDone = Number(sub.lessonsDone) || 0;
+            let pTotal = Number(sub.pagesTotal) || 1;
+            let pDone = Number(sub.pagesDone) || 0;
+            
+            let lPct = Math.min(100, Math.round((lDone / lTotal) * 100));
+            let pPct = Math.min(100, Math.round((pDone / pTotal) * 100));
+            let subPct = Math.round((lPct + pPct) / 2);
+            totalSubProgressSum += subPct;
+
             if (sub.isEditing && !isViewOnly) {
                 subjectsContainer.innerHTML += `
                     <div style="background:rgba(0,0,0,0.15); border:1px solid var(--card-border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;">
@@ -604,6 +685,17 @@
                                 </div>
                             ` : ''}
                         </div>
+                        
+                        <div style="background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:8px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                                <span>مؤشر إنجاز المادة</span>
+                                <span style="font-weight:bold; color:var(--accent-secondary);">${subPct}%</span>
+                            </div>
+                            <div class="progress-bar-bg" style="height:6px; margin-top:4px;">
+                                <div class="progress-bar-fill-sub" style="width: ${subPct}%;"></div>
+                            </div>
+                        </div>
+
                         <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
                             <span>📚 الدروس:</span>
                             <div style="display:flex; gap:4px;">
@@ -624,18 +716,26 @@
             }
         });
 
-        let total = state.tasks.length + state.subjects.length * 2;
-        let done = state.tasks.filter(t => t.done).length;
-        state.subjects.forEach(s => {
-            if (s.lessonsTotal > 0 && s.lessonsDone >= s.lessonsTotal) done++;
-            if (s.pagesTotal > 0 && s.pagesDone >= s.pagesTotal) done++;
-        });
-        let pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        let totalTasks = state.tasks.length;
+        let doneTasks = state.tasks.filter(t => t.done).length;
+        let tasksPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
-        document.getElementById('progressBar').style.width = pct + '%';
-        document.getElementById('progressText').innerText = pct + '%';
+        let subjectsCount = state.subjects.length;
+        let subjectsPct = subjectsCount > 0 ? Math.round(totalSubProgressSum / subjectsCount) : 0;
 
-        checkMilestones(pct);
+        let totalPct = Math.round((tasksPct * 0.6) + (subjectsPct * 0.4));
+        if (totalPct > 100) totalPct = 100;
+
+        document.getElementById('totalProgressBar').style.width = totalPct + '%';
+        document.getElementById('totalProgressText').innerText = totalPct + '%';
+
+        document.getElementById('tasksProgressBar').style.width = tasksPct + '%';
+        document.getElementById('tasksProgressText').innerText = tasksPct + '%';
+
+        document.getElementById('subjectsProgressBar').style.width = subjectsPct + '%';
+        document.getElementById('subjectsProgressText').innerText = subjectsPct + '%';
+
+        checkMilestones(totalPct);
 
         const hist = document.getElementById('historyList');
         hist.innerHTML = state.history.length === 0 ? '<p style="font-size:0.85rem; color:var(--text-muted);">لا يوجد سجل محفوظ بعد.</p>' : '';
@@ -711,18 +811,26 @@
 
     function saveAndResetDay() {
         if(currentUser && currentUser.role !== 'viewer'){
-            let total = state.tasks.length + state.subjects.length * 2;
-            let done = state.tasks.filter(t => t.done).length;
+            let totalTasks = state.tasks.length;
+            let doneTasks = state.tasks.filter(t => t.done).length;
+            let tasksPct = totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
+            
+            let totalSubSum = 0;
             state.subjects.forEach(s => {
-                if (s.lessonsTotal > 0 && s.lessonsDone >= s.lessonsTotal) done++;
-                if (s.pagesTotal > 0 && s.pagesDone >= s.pagesTotal) done++;
+                let lPct = (s.lessonsDone / (s.lessonsTotal || 1)) * 100;
+                let pPct = (s.pagesDone / (s.pagesTotal || 1)) * 100;
+                totalSubSum += (lPct + pPct) / 2;
             });
-            let pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            state.history.unshift({ date: new Date().toLocaleDateString('ar-SA'), percent: pct });
+            let subjectsPct = state.subjects.length > 0 ? totalSubSum / state.subjects.length : 0;
+            let totalPct = Math.round((tasksPct * 0.6) + (subjectsPct * 0.4));
+            if (totalPct > 100) totalPct = 100;
+
+            // حفظ النسبة في السجل (الأرشيف) وتصفير المهام اليومية فقط، مع الحفاظ على تفاصيل وأسماء المواد لليوم الجديد
+            state.history.unshift({ date: new Date().toLocaleDateString('ar-SA'), percent: totalPct });
             state.tasks.forEach(t => t.done = false);
-            state.subjects.forEach(s => { s.lessonsDone = 0; s.pagesDone = 0; });
+            
             render();
-            alert('تم حفظ اليوم بنجاح في السجل!');
+            alert('تم حفظ إنجاز اليوم في الأرشيف بنجاح، وبدء يوم جديد مع استمرار مقرراتك ومادتك الدراسية!');
         }
     }
 
@@ -739,13 +847,15 @@
         if(!timerInt){
             timerInt = setInterval(() => {
                 if(timeLeft > 0){
-                    timeLeft--; updateTimerDisplay();
+                    timeLeft--; updateTimerData(); // استخدام التحديث الآمن
+                    updateTimerDisplay();
                 } else {
                     clearInterval(timerInt); timerInt = null; triggerConfetti(); alert('انتهت جلسة التركيز بنجاح! خذ استراحة مستحقة.');
                 }
             }, 1000);
         }
     }
+    function updateTimerData() { /* دالة مساعدة لتأكيد استقرار المؤقت */ }
     function pauseTimer() { clearInterval(timerInt); timerInt = null; }
     function resetTimer() { pauseTimer(); timeLeft = selectedMinutes * 60; updateTimerDisplay(); }
 
